@@ -9,10 +9,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+
 import java.util.ArrayList;
+
 import MAD_2124.Android.R;
 import MAD_2124.Android.adapter.ContactAdapter;
 import MAD_2124.Android.databinding.FragmentHomeBinding;
+import MAD_2124.Android.helper.SharedPreferenceHelper;
 import MAD_2124.Android.model.Contact;
 
 public class FragmentHome extends Fragment {
@@ -21,26 +24,38 @@ public class FragmentHome extends Fragment {
 
     ContactAdapter adapter;
 
+    ArrayList<Contact> contacts = new ArrayList<>();
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        loadSharePreferenceData();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if(binding == null){
             binding = FragmentHomeBinding.inflate(inflater,container, false);
+
         }
+
         return binding.getRoot();
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        adapter.setAdapterData(Contact.contact);
+        loadSharePreferenceData();
+        adapter.setAdapterData(contacts);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         adapter =  new ContactAdapter(requireContext(), R.layout.contact_item);
         binding.contactList.setAdapter(adapter);
-        adapter.setAdapterData(Contact.contact);
+        adapter.setAdapterData(contacts);
 
         binding.searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
 
@@ -69,15 +84,22 @@ public class FragmentHome extends Fragment {
     public void filterData(String s){
         if(!s.isEmpty()){
             ArrayList<Contact> filter = new ArrayList<>();
-            Contact.contact.forEach(contact -> {
+            contacts.forEach(contact -> {
                 if(contact.getFirstName().contains(s)){
                     filter.add(contact);
                 }
             });
             adapter.setAdapterData(filter);
         }else{
-            adapter.setAdapterData(Contact.contact);
+            adapter.setAdapterData(contacts);
         }
 
     }
+
+    private void loadSharePreferenceData(){
+        SharedPreferenceHelper sharedPrefHelper = new SharedPreferenceHelper(getContext());
+        contacts = sharedPrefHelper.getContacts();
+    }
+
+
 }
